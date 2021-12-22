@@ -14,6 +14,7 @@ require (
 
 require (
 	github.com/ansel1/merry/v2 v2.0.0-beta.10 // indirect
+	github.com/doug-martin/goqu/v9 v9.18.0 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.0 // indirect

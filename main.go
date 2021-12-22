@@ -40,7 +40,7 @@ func main() {
 	}
 
 	// repositories
-	goquDB, err := connection.GormDB(db)
+	goquDB, err := connection.GoquDB(db)
 	if err != nil {
 		return
 	}

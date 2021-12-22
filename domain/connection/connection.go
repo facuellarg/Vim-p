@@ -5,16 +5,16 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/doug-martin/goqu/v9"
+	_ "github.com/doug-martin/goqu/v9/dialect/mysql"
 	_ "github.com/go-sql-driver/mysql"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
 )
 
 var (
 	db        *sql.DB
-	gormDB    *gorm.DB
+	goquDB    *goqu.Database
 	mutexDB   sync.Mutex
-	mutexGorm sync.Mutex
+	mutexGoqu sync.Mutex
 )
 
 //DataBaseConnection fields for database connection
@@ -52,16 +52,14 @@ func DBConnection(dbFields DataBaseConnection) (*sql.DB, error) {
 	return db, err
 }
 
-func GormDB(db *sql.DB) (*gorm.DB, error) {
-	var err error
-	if gormDB == nil {
-		mutexGorm.Lock()
-		defer mutexGorm.Unlock()
-		if gormDB == nil {
-			gormDB, err = gorm.Open(mysql.New(mysql.Config{
-				Conn: db,
-			}), &gorm.Config{})
+func GoquDB(db *sql.DB) (*goqu.Database, error) {
+	if goquDB == nil {
+		mutexGoqu.Lock()
+		defer mutexGoqu.Unlock()
+		if goquDB == nil {
+			dialect := goqu.Dialect("mysql")
+			goquDB = dialect.DB(db)
 		}
 	}
-	return gormDB, err
+	return goquDB, nil
 }

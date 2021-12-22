@@ -3,7 +3,7 @@ package usecase
 import (
 	"freddy.facuellarg.com/domain/entities"
 	"github.com/ansel1/merry"
-	"gorm.io/gorm"
+	"github.com/doug-martin/goqu/v9"
 )
 
 //UserRepositoryI public interface for user repository
@@ -16,21 +16,25 @@ type UserRepositoryI interface {
 //userRepository this contains all functionalities
 //required for operate with user databases
 type userRepository struct {
-	db *gorm.DB
+	db *goqu.Database
 }
 
 //NewUserRepository return a new userRepository
-func NewUserRepository(db *gorm.DB) UserRepositoryI {
+func NewUserRepository(db *goqu.Database) UserRepositoryI {
 	return &userRepository{
 		db: db,
 	}
 }
 
 func (ur *userRepository) CreateUser(user entities.User) (*entities.User, error) {
-	result := ur.db.Create(&user)
-	if result.Error != nil {
-		return nil, merry.Wrap(result.Error)
+	result, err := ur.db.Insert("users").Rows(
+		user,
+	).Executor().Exec()
+	if err != nil {
+		return nil, merry.Wrap(err)
 	}
+	user.Id, _ = result.LastInsertId()
+
 	return &user, nil
 
 }
