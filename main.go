@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"freddy.facuellarg.com/adapters/router"
+	"freddy.facuellarg.com/config"
 	"freddy.facuellarg.com/domain/connection"
 	"freddy.facuellarg.com/domain/usecase"
 	"freddy.facuellarg.com/utils"
@@ -11,6 +12,8 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/mitchellh/mapstructure"
+	"github.com/spf13/viper"
 )
 
 var databaseFields = connection.DataBaseConnection{
@@ -22,7 +25,15 @@ var databaseFields = connection.DataBaseConnection{
 }
 
 func main() {
-
+	if err := config.ReadConf(); err != nil {
+		log.Fatal(err)
+	}
+	if err := mapstructure.Decode(
+		viper.GetStringMap("database"),
+		&databaseFields,
+	); err != nil {
+		log.Fatal(err)
+	}
 	//get the db connection
 	db, err := connection.DBConnection(databaseFields)
 	if err != nil {
