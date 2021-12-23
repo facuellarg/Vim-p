@@ -51,11 +51,11 @@ func main() {
 	}
 
 	// repositories
-	goquDB, err := connection.GormDB(db)
+	gormDB, err := connection.GormDB(db)
 	if err != nil {
-		return
+		log.Fatal(err)
 	}
-	userRepo := usecase.NewUserRepository(goquDB)
+	userRepo := usecase.NewUserRepository(gormDB)
 
 	server := echo.New()
 
