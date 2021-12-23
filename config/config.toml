@@ -1,10 +1,10 @@
 [database]
-host = localhost
-database = vim
-user = root
-password = root1234
+host = "localhost"
+db = "vim"
+user = "root"
+pass = "root1234"
 port = 3306
 
 [jwt]
-secret = my-secret
+secret = "my-secret"
 expiration-time = 24 #in hours
