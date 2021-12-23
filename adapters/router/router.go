@@ -7,23 +7,21 @@ import (
 
 //router manage the routing process
 type router struct {
-	server   *echo.Echo
 	userRepo usecase.UserRepositoryI
 }
 
 //NewRouter return a new router instance
-func NewRouter(server *echo.Echo, userRepo usecase.UserRepositoryI) *router {
+func NewRouter(userRepo usecase.UserRepositoryI) *router {
 	return &router{
-		server:   server,
 		userRepo: userRepo,
 	}
 }
 
 //RouteUsers put the routes for user
 //operations in the server
-func (r *router) RouteUsers() error {
+func (r *router) RouteUsers(server *echo.Echo) error {
 	userRouter := NewUserRouter(r.userRepo)
-	user := r.server.Group("/users")
+	user := server.Group("/users")
 	user.POST("", userRouter.RegistUser)
 	user.POST("/loggin", userRouter.Loggin)
 	return nil

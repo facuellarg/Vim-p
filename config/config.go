@@ -1,10 +1,24 @@
 package config
 
-import "github.com/spf13/viper"
+import (
+	"freddy.facuellarg.com/domain/connection"
+	"github.com/mitchellh/mapstructure"
+	"github.com/spf13/viper"
+)
 
-var configPath = "./config"
-var configFileName = "config"
-var configExtension = "toml"
+var (
+	configPath      = "./config"
+	configFileName  = "config"
+	configExtension = "toml"
+	//defaultValuesForConnection
+	databaseFields = connection.DataBaseConnection{
+		User: "root",
+		Pass: "root1234",
+		Host: "localhost",
+		Port: 3306,
+		DB:   "vim",
+	}
+)
 
 //SetExtension set the extension of file, by default toml
 func SetExtension(extension string) {
@@ -22,11 +36,21 @@ func SetConfigPath(path string) {
 	configPath = path
 }
 
-//ReadConf read the configuration in the current directory
-func ReadConf() error {
+//LoadConf read the configuration in the current directory
+func LoadConf() error {
 	viper.AddConfigPath(configPath)
 	viper.SetConfigName(configFileName)
 	viper.SetConfigType(configExtension)
 	return viper.ReadInConfig()
+}
 
+//GetDatabaseConf return the fields for database connection
+func GetDatabaseConf() (connection.DataBaseConnection, error) {
+	if err := mapstructure.Decode(
+		viper.GetStringMap("database"),
+		&databaseFields,
+	); err != nil {
+		return connection.DataBaseConnection{}, err
+	}
+	return databaseFields, nil
 }

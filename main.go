@@ -12,28 +12,24 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/mitchellh/mapstructure"
-	"github.com/spf13/viper"
 )
 
-var databaseFields = connection.DataBaseConnection{
-	"root",
-	"root1234",
-	"localhost",
-	3306,
-	"vim",
+//Hello echo func
+func Hello(c echo.Context) error {
+	return c.String(200, "Hello")
 }
 
 func main() {
-	if err := config.ReadConf(); err != nil {
+	//load configuration using viper lib
+	if err := config.LoadConf(); err != nil {
 		log.Fatal(err)
 	}
-	if err := mapstructure.Decode(
-		viper.GetStringMap("database"),
-		&databaseFields,
-	); err != nil {
+
+	databaseFields, err := config.GetDatabaseConf()
+	if err != nil {
 		log.Fatal(err)
 	}
+
 	//get the db connection
 	db, err := connection.DBConnection(databaseFields)
 	if err != nil {
@@ -46,6 +42,7 @@ func main() {
 	} else {
 		err = MigrateUp(db)
 	}
+
 	if err != nil && err != migrate.ErrNoChange {
 		log.Fatal("in migration ", err)
 	}
@@ -60,12 +57,14 @@ func main() {
 	server := echo.New()
 
 	//router
-	router := router.NewRouter(server, userRepo)
-	if err := router.RouteUsers(); err != nil {
+	router := router.NewRouter(userRepo)
+	if err := router.RouteUsers(server); err != nil {
 		log.Fatal(err)
 	}
 
 	server.Use(middleware.Logger())
+	server.Use(middleware.JWTWithConfig(middleware.JWTConfig{}))
+
 	if err := server.Start(":8080"); err != nil {
 		log.Fatal(err)
 	}
