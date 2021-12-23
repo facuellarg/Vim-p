@@ -2,7 +2,6 @@ package entities
 
 import (
 	"database/sql/driver"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -11,6 +10,7 @@ import (
 
 type CustomTime time.Time
 
+var formatDateSql = "2006-01-02"
 var formatDate = `"2006-01-02"`
 
 //MarshalJSON
@@ -20,7 +20,11 @@ func (mt CustomTime) MarshalJSON() ([]byte, error) {
 
 //UnmarshalJSON
 func (mt *CustomTime) UnmarshalJSON(data []byte) error {
-	timeFormated, err := time.Parse(formatDate, strings.Trim(string(data), ""))
+	return parseMyTime(formatDate, data, mt)
+}
+
+func parseMyTime(format string, data []byte, mt *CustomTime) error {
+	timeFormated, err := time.Parse(format, strings.Trim(string(data), ""))
 	if err != nil {
 		return err
 	}
@@ -38,9 +42,9 @@ func (mt *CustomTime) Scan(value interface{}) error {
 	if !ok {
 		return errors.New(fmt.Sprint("Failed to unmarshal JSONB value:", value))
 	}
-	result := CustomTime{}
-	err := json.Unmarshal(bytes, &result)
-	*mt = CustomTime(result)
+	//result := CustomTime{}
+	err := parseMyTime(formatDateSql, bytes, mt)
+	//*mt = CustomTime(result)
 	return err
 }
 
@@ -49,8 +53,8 @@ func (mt CustomTime) Value() (driver.Value, error) {
 	//if len(j) == 0 {
 	//return nil, nil
 	//}
-	value, err := json.Marshal(mt)
-	fmt.Printf("holaa %+v,%+v\n", strings.Trim(string(value), `"`), err)
+	value := time.Time(mt).Format(formatDateSql)
+	//value, err := json.Marshal(mt)
 
-	return strings.Trim(string(value), `"`), err
+	return value, nil
 }

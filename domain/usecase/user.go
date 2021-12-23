@@ -10,7 +10,7 @@ import (
 type UserRepositoryI interface {
 	CreateUser(user entities.User) (*entities.User, error)
 	DeleteUser(id int) (entities.User, error)
-	SearchUserByEmail(email string) (entities.User, error)
+	SearchUserByEmail(email string) (*entities.User, error)
 }
 
 //userRepository this contains all functionalities
@@ -39,6 +39,12 @@ func (ur *userRepository) DeleteUser(id int) (entities.User, error) {
 	panic("not implemented") // TODO: Implement
 }
 
-func (ur *userRepository) SearchUserByEmail(email string) (entities.User, error) {
-	panic("not implemented") // TODO: Implement
+func (ur *userRepository) SearchUserByEmail(email string) (*entities.User, error) {
+	var user entities.User
+	result := ur.db.Where("email = ?", email).First(&user)
+	if result.Error != nil {
+		return nil, merry.Wrap(result.Error)
+	}
+	return &user, nil
+	//panic("not implemented") // TODO: Implement
 }
