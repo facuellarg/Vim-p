@@ -24,6 +24,31 @@ func NewUserRouter(repository usecase.UserRepositoryI) *userRoutes {
 	}
 }
 
+//Loggin log the current user
+func (ur *userRoutes) Loggin(c echo.Context) error {
+	var logData entities.LogUserDto
+	if err := c.Bind(&logData); err != nil {
+		return merry.Wrap(err)
+	}
+	user, err := ur.userResitory.SearchUserByEmail(logData.Email)
+	if err != nil {
+		return merry.Wrap(err)
+	}
+	if !isValidPass(*user, logData.Password) {
+		return echo.ErrUnauthorized
+	}
+
+	return c.JSON(http.StatusOK, *user)
+}
+
+func isValidPass(user entities.User, password string) bool {
+	return bcrypt.CompareHashAndPassword(
+		[]byte(user.Password),
+		[]byte(password),
+	) == nil
+
+}
+
 //RegisterUser create a user
 func (ur *userRoutes) RegistUser(c echo.Context) error {
 	var user entities.User

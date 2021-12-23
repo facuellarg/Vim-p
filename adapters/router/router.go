@@ -25,5 +25,6 @@ func (r *router) RouteUsers() error {
 	userRouter := NewUserRouter(r.userRepo)
 	user := r.server.Group("/users")
 	user.POST("", userRouter.RegistUser)
+	user.POST("/loggin", userRouter.Loggin)
 	return nil
 }
